@@ -1,0 +1,278 @@
+{
+  "features": [
+    "Delivery_person_Age",
+    "Delivery_person_Ratings",
+    "distance_km",
+    "Vehicle_condition",
+    "multiple_deliveries",
+    "weather_enc",
+    "traffic_enc",
+    "city_enc",
+    "vehicle_enc",
+    "order_enc",
+    "festival_enc",
+    "order_hour",
+    "is_peak_hour",
+    "is_weekend"
+  ],
+  "peak_hours": [
+    11,
+    12,
+    13,
+    14,
+    17,
+    18,
+    19,
+    20,
+    21
+  ],
+  "distance_cap": 20.96888932863528,
+  "overall_avg_delivery_min": 26.29,
+  "encodings": {
+    "weather": {
+      "Sunny": 0,
+      "Cloudy": 1,
+      "Windy": 2,
+      "Fog": 3,
+      "Stormy": 4,
+      "Sandstorms": 5
+    },
+    "traffic": {
+      "Low": 0,
+      "Medium": 1,
+      "High": 2,
+      "Jam": 3
+    },
+    "city": {
+      "Semi-Urban": 0,
+      "Urban": 1,
+      "Metropolitian": 2
+    },
+    "vehicle": {
+      "bicycle": 0,
+      "electric_scooter": 1,
+      "scooter": 2,
+      "motorcycle": 3
+    },
+    "order": {
+      "Snack": 0,
+      "Drinks": 1,
+      "Buffet": 2,
+      "Meal": 3
+    }
+  },
+  "feature_schema": {
+    "numerical": [
+      "Delivery_person_Age",
+      "Delivery_person_Ratings",
+      "distance_km",
+      "Vehicle_condition",
+      "multiple_deliveries"
+    ],
+    "categorical": [
+      "weather_enc",
+      "traffic_enc",
+      "city_enc",
+      "vehicle_enc",
+      "order_enc",
+      "festival_enc"
+    ],
+    "temporal": [
+      "order_hour",
+      "is_peak_hour",
+      "is_weekend"
+    ]
+  },
+  "data_quality": {
+    "duplicate_rows": 0,
+    "missing_pct": {
+      "Time_Orderd": 3.8
+    }
+  },
+  "hour_baseline": {
+    "0": 430,
+    "8": 1818,
+    "9": 1947,
+    "10": 1991,
+    "11": 1962,
+    "12": 892,
+    "13": 784,
+    "14": 791,
+    "15": 873,
+    "16": 709,
+    "17": 4278,
+    "18": 4480,
+    "19": 6326,
+    "20": 4539,
+    "21": 4686,
+    "22": 4576,
+    "23": 4511
+  },
+  "hour_avg_delivery": {
+    "0": 22.17,
+    "8": 19.58,
+    "9": 19.54,
+    "10": 19.48,
+    "11": 26.38,
+    "12": 26.83,
+    "13": 27.54,
+    "14": 27.54,
+    "15": 23.19,
+    "16": 22.94,
+    "17": 27.41,
+    "18": 27.27,
+    "19": 29.59,
+    "20": 31.19,
+    "21": 31.09,
+    "22": 23.2,
+    "23": 22.45
+  },
+  "traffic_avg_time": {
+    "High": 27.24,
+    "Jam": 31.18,
+    "Low": 21.46,
+    "Medium": 26.7
+  },
+  "weather_avg_time": {
+    "Cloudy": 28.92,
+    "Fog": 28.74,
+    "Sandstorms": 25.88,
+    "Stormy": 25.87,
+    "Sunny": 21.86,
+    "Windy": 26.12
+  },
+  "city_stats": [
+    {
+      "City": "Metropolitian",
+      "total_orders": 35293,
+      "avg_delivery_min": 27.14,
+      "avg_distance_km": 10.01,
+      "peak_hour_pct": 64.8
+    },
+    {
+      "City": "Semi-Urban",
+      "total_orders": 164,
+      "avg_delivery_min": 49.73,
+      "avg_distance_km": 13.06,
+      "peak_hour_pct": 99.4
+    },
+    {
+      "City": "Urban",
+      "total_orders": 10136,
+      "avg_delivery_min": 22.98,
+      "avg_distance_km": 9.2,
+      "peak_hour_pct": 56.2
+    }
+  ],
+  "festival_impact": {
+    "no_festival_avg_min": 25.91,
+    "festival_avg_min": 45.52
+  },
+  "multiple_deliveries_impact": {
+    "0": 22.88,
+    "1": 26.72,
+    "2": 40.45,
+    "3": 47.82
+  },
+  "distance_buckets": {
+    "0-3km": 21.43,
+    "3-6km": 22.74,
+    "6-10km": 24.34,
+    "10-15km": 29.87,
+    "15-21km": 29.65
+  },
+  "vehicle_avg_time": {
+    "bicycle": 26.43,
+    "electric_scooter": 24.47,
+    "motorcycle": 27.61,
+    "scooter": 24.48
+  },
+  "dataset_meta": {
+    "total_records": 45593,
+    "unique_drivers": 1320,
+    "date_range_start": "2022-02-11",
+    "date_range_end": "2022-04-06",
+    "dataset_days": 54
+  },
+  "feature_importance": {
+    "distance_km": 2.775099992752075,
+    "traffic_enc": 2.674299955368042,
+    "Delivery_person_Age": 2.5459001064300537,
+    "weather_enc": 2.38700008392334,
+    "Vehicle_condition": 2.113600015640259,
+    "Delivery_person_Ratings": 2.10509991645813,
+    "multiple_deliveries": 0.8190000057220459,
+    "festival_enc": 0.3553999960422516,
+    "city_enc": 0.33180001378059387,
+    "is_peak_hour": 0.3231000006198883,
+    "order_hour": 0.09740000218153,
+    "order_enc": 0.07569999992847443,
+    "vehicle_enc": 0.053700000047683716,
+    "is_weekend": 0.020800000056624413
+  },
+  "model_performance": {
+    "delivery_time_model": {
+      "type": "XGBoost",
+      "split": "chronological",
+      "train_rows": 31915,
+      "val_rows": 4559,
+      "test_rows": 9119,
+      "baseline_mae": 7.6,
+      "mae_minutes": 3.22,
+      "r2_score": 0.818,
+      "improvement": 4.38,
+      "residual_mean": -0.05,
+      "residual_std": 4.02,
+      "within_5min_pct": 80.0,
+      "within_10min_pct": 98.5,
+      "above_10min_pct": 1.5
+    },
+    "demand_model": {
+      "type": "XGBoost with lag features",
+      "mae_orders": 9.2,
+      "baseline_mae": 33.5,
+      "forecast_std": 11.9,
+      "features": [
+        "order_hour",
+        "day_of_week",
+        "is_weekend",
+        "is_peak",
+        "prev_1h_count",
+        "prev_2h_count",
+        "rolling_avg_3h"
+      ]
+    }
+  },
+  "demand_meta": {
+    "peak_hours": [
+      11,
+      12,
+      13,
+      14,
+      17,
+      18,
+      19,
+      20,
+      21
+    ],
+    "features": [
+      "order_hour",
+      "day_of_week",
+      "is_weekend",
+      "is_peak",
+      "prev_1h_count",
+      "prev_2h_count",
+      "rolling_avg_3h"
+    ],
+    "split": "chronological",
+    "mae_orders": 9.2,
+    "baseline_mae": 33.5,
+    "forecast_std": 11.9,
+    "last_known_baseline": [
+      119,
+      129,
+      142
+    ],
+    "last_timestamp": "2022-04-06 23:00:00"
+  }
+}

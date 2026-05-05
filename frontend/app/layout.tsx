@@ -4,7 +4,7 @@ import { Instrument_Sans, Instrument_Serif, JetBrains_Mono } from "next/font/goo
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
-import Script from 'next/script';   // ✅ already imported
+import Script from 'next/script';   // we'll keep the beforeInteractive as backup
 
 const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
@@ -41,14 +41,28 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-background" suppressHydrationWarning>
       <head>
-        {/* Block the related-apps permission completely – meta fallback (keep for safety) */}
+        {/* 1. Permission policy still useful as safety net */}
         <meta httpEquiv="Permissions-Policy" content="get-installed-related-apps=()" />
+
+        {/* 2. 🔒 IMMEDIATE INLINE SYNC SCRIPT – runs before any other JS is parsed */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Erase the API before anything can call it
+              Object.defineProperty(navigator, 'getInstalledRelatedApps', {
+                value: () => Promise.resolve([]),
+                writable: false,
+                configurable: false,
+              });
+            `,
+          }}
+        />
       </head>
       <body
         className={`${instrumentSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} font-sans antialiased bg-background text-foreground`}
       >
-        {/* 🔥 NUCLEAR FIX: runs before any other script, permanently kills the popup */}
-        <Script id="kill-related-apps" strategy="beforeInteractive">
+        {/* 3. Backup – runs again just in case (double lock) */}
+        <Script id="kill-related-apps-backup" strategy="beforeInteractive">
           {`
             Object.defineProperty(navigator, 'getInstalledRelatedApps', {
               value: () => Promise.resolve([]),
@@ -57,8 +71,6 @@ export default function RootLayout({
             });
           `}
         </Script>
-
-        {/* ✅ DELETE the old <script dangerouslySetInnerHTML> block – it was weaker */}
 
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           {children}

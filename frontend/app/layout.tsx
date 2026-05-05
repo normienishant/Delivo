@@ -40,26 +40,31 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-background" suppressHydrationWarning>
       <head>
-        {/* 🛡️ ULTIMATE FIX – runs before any other script */}
+        {/* 🛡️ ABSOLUTE NUKE – runs before anything else */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              // 1. Unregister all service workers immediately
+              // 1. Kill all service workers that might have cached the old API
               if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                  registrations.forEach(function(reg) {
-                    reg.unregister();
-                  });
+                navigator.serviceWorker.getRegistrations().then(function(regs) {
+                  regs.forEach(function(reg) { reg.unregister(); });
                 });
               }
 
-              // 2. Block the related-apps API permanently
+              // 2. Remove any lingering manifest link
+              (function() {
+                var link = document.querySelector('link[rel="manifest"]');
+                if (link) link.remove();
+              })();
+
+              // 3. Permanently erase the related-apps API
+              delete navigator.getInstalledRelatedApps;
               Object.defineProperty(navigator, 'getInstalledRelatedApps', {
-                get: function() { return function() { return Promise.resolve([]); }; },
+                get: function() {},
                 set: function() {}
               });
               Object.defineProperty(navigator, 'getInstalledRelatedApps', {
-                value: function() { return Promise.resolve([]); },
+                value: undefined,
                 writable: false,
                 configurable: false
               });

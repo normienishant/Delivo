@@ -1,6 +1,6 @@
 import { Navigation } from "@/components/landing/navigation";
 import { FooterSection } from "@/components/landing/footer-section";
-import { PredictionForm } from "@/components/predict/prediction-form";
+import PredictContent from "./PredictContent";
 
 export const metadata = {
   title: "Predict — Delivo",
@@ -31,7 +31,7 @@ export default function PredictPage() {
 
       <section className="relative pb-24 lg:pb-32">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
-          <PredictionForm />
+          <PredictContent />
         </div>
       </section>
 

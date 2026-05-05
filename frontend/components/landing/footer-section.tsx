@@ -11,15 +11,16 @@ const footerLinks = {
     { name: "Simulate", href: "/simulate" },
     { name: "Insights", href: "/insights" },
   ],
-  Developers: [
-    { name: "API Docs", href: "http://localhost:8000/docs" },
-    { name: "FastAPI Server", href: "http://localhost:8000" },
-    { name: "GitHub", href: "https://github.com/normienishant/Delivo" },
-  ],
+  Built With: [
+  { name: "FastAPI",       href: "https://fastapi.tiangolo.com" },
+  { name: "XGBoost",       href: "https://xgboost.readthedocs.io" },
+  { name: "Next.js",       href: "https://nextjs.org/docs" },
+  { name: "GitHub Repo",   href: "https://github.com/normienishant/Delivo" },
+],
   Model: [
     { name: "45,593 real deliveries", href: "/insights" },
     { name: "XGBoost + SHAP", href: "/predict" },
-    { name: "Dataset", href: "/insights" },
+    { name: "Dataset", href: "https://kaggle.com/datasets/gauravmalik26/food-delivery-dataset" },
   ],
   Legal: [
     { name: "MIT License", href: "https://github.com/normienishant/Delivo" },
@@ -28,7 +29,7 @@ const footerLinks = {
 
 const socialLinks = [
   { name: "GitHub", href: "https://github.com/normienishant/Delivo" },
-  { name: "LinkedIn", href: "https://github.com/normienishant/Delivo" }
+  { name: "LinkedIn", href: "https://www.linkedin.com/in/designsbynishant/" }
 ];
 
 export function FooterSection() {

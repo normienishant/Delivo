@@ -4,6 +4,7 @@ import { Instrument_Sans, Instrument_Serif, JetBrains_Mono } from "next/font/goo
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
+import Script from 'next/script';   // ✅ already imported
 
 const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
@@ -40,23 +41,25 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-background" suppressHydrationWarning>
       <head>
-        {/* Block the related-apps permission completely – meta fallback */}
+        {/* Block the related-apps permission completely – meta fallback (keep for safety) */}
         <meta httpEquiv="Permissions-Policy" content="get-installed-related-apps=()" />
       </head>
       <body
         className={`${instrumentSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} font-sans antialiased bg-background text-foreground`}
       >
-        {/* Override the API immediately – before any component mounts */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              // Kill the related-apps prompt once and for all
-              if (navigator.getInstalledRelatedApps) {
-                navigator.getInstalledRelatedApps = () => Promise.resolve([]);
-              }
-            `,
-          }}
-        />
+        {/* 🔥 NUCLEAR FIX: runs before any other script, permanently kills the popup */}
+        <Script id="kill-related-apps" strategy="beforeInteractive">
+          {`
+            Object.defineProperty(navigator, 'getInstalledRelatedApps', {
+              value: () => Promise.resolve([]),
+              writable: false,
+              configurable: false,
+            });
+          `}
+        </Script>
+
+        {/* ✅ DELETE the old <script dangerouslySetInnerHTML> block – it was weaker */}
+
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           {children}
           <Analytics />

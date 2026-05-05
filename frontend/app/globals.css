@@ -248,3 +248,8 @@
   background: rgba(245, 158, 11, 0.04);
   border-color: rgba(245, 158, 11, 0.2);
 }
+
+html, body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}

@@ -76,7 +76,6 @@ export function LocationSearch({
         const res = await fetch(url);
         const data = await res.json();
         const predictions = data?.predictions || [];
-        // ✅ Geometry se lat/lon le lo taaki handleSelect mein turant use kar sako
         setSuggestions(
           predictions.map((p: any) => ({
             display_name: p.description,
@@ -101,11 +100,10 @@ export function LocationSearch({
     setSuggestions([]);
     if (onDisplayChange) onDisplayChange(result.display_name);
 
-    // ✅ Agar geometry se lat/lon mil gaye to seedha use karo
+    // If we already have lat/lon, check distance
     if (result.lat && result.lon) {
       const lat = parseFloat(result.lat);
       const lon = parseFloat(result.lon);
-      // Distance check (only for restaurant with maxDistanceKm)
       if (maxDistanceKm != null && nearLat != null && nearLon != null) {
         const dist = haversineKm(nearLat, nearLon, lat, lon);
         if (dist > maxDistanceKm) {
@@ -120,7 +118,7 @@ export function LocationSearch({
       return;
     }
 
-    // Fallback: geocode
+    // Fallback geocode
     try {
       const geoRes = await fetch(
         `/api/places/geocode?address=${encodeURIComponent(result.display_name)}`
@@ -181,6 +179,14 @@ export function LocationSearch({
               key={i}
               type="button"
               className="w-full text-left px-3 py-2 text-xs hover:bg-amber-500/10 transition-colors border-b border-neutral-800 last:border-0"
+              onMouseDown={(e) => {
+                // prevent blur on input before click (desktop)
+                e.preventDefault();
+              }}
+              onTouchStart={(e) => {
+                // same for mobile – prevents keyboard dismiss & blur
+                e.preventDefault();
+              }}
               onClick={() => handleSelect(s)}
             >
               {s.display_name}

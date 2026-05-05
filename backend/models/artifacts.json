@@ -5,15 +5,24 @@
     "distance_km",
     "Vehicle_condition",
     "multiple_deliveries",
-    "weather_enc",
-    "traffic_enc",
     "city_enc",
     "vehicle_enc",
     "order_enc",
     "festival_enc",
     "order_hour",
     "is_peak_hour",
-    "is_weekend"
+    "is_weekend",
+    "weather_Cloudy",
+    "weather_Fog",
+    "weather_Sandstorms",
+    "weather_Stormy",
+    "weather_Sunny",
+    "weather_Windy",
+    "traffic_High",
+    "traffic_Jam",
+    "traffic_Low",
+    "traffic_Medium",
+    "severe_x_distance"
   ],
   "peak_hours": [
     11,
@@ -61,17 +70,30 @@
       "Meal": 3
     }
   },
+  "weather_dummy_cols": [
+    "weather_Cloudy",
+    "weather_Fog",
+    "weather_Sandstorms",
+    "weather_Stormy",
+    "weather_Sunny",
+    "weather_Windy"
+  ],
+  "traffic_dummy_cols": [
+    "traffic_High",
+    "traffic_Jam",
+    "traffic_Low",
+    "traffic_Medium"
+  ],
   "feature_schema": {
     "numerical": [
       "Delivery_person_Age",
       "Delivery_person_Ratings",
       "distance_km",
       "Vehicle_condition",
-      "multiple_deliveries"
+      "multiple_deliveries",
+      "severe_x_distance"
     ],
     "categorical": [
-      "weather_enc",
-      "traffic_enc",
       "city_enc",
       "vehicle_enc",
       "order_enc",
@@ -81,13 +103,21 @@
       "order_hour",
       "is_peak_hour",
       "is_weekend"
+    ],
+    "weather_dummies": [
+      "weather_Cloudy",
+      "weather_Fog",
+      "weather_Sandstorms",
+      "weather_Stormy",
+      "weather_Sunny",
+      "weather_Windy"
+    ],
+    "traffic_dummies": [
+      "traffic_High",
+      "traffic_Jam",
+      "traffic_Low",
+      "traffic_Medium"
     ]
-  },
-  "data_quality": {
-    "duplicate_rows": 0,
-    "missing_pct": {
-      "Time_Orderd": 3.8
-    }
   },
   "hour_baseline": {
     "0": 430,
@@ -195,20 +225,29 @@
     "dataset_days": 54
   },
   "feature_importance": {
-    "distance_km": 2.775099992752075,
-    "traffic_enc": 2.674299955368042,
-    "Delivery_person_Age": 2.5459001064300537,
-    "weather_enc": 2.38700008392334,
-    "Vehicle_condition": 2.113600015640259,
-    "Delivery_person_Ratings": 2.10509991645813,
-    "multiple_deliveries": 0.8190000057220459,
-    "festival_enc": 0.3553999960422516,
-    "city_enc": 0.33180001378059387,
-    "is_peak_hour": 0.3231000006198883,
-    "order_hour": 0.09740000218153,
-    "order_enc": 0.07569999992847443,
-    "vehicle_enc": 0.053700000047683716,
-    "is_weekend": 0.020800000056624413
+    "distance_km": 2.6554999351501465,
+    "Delivery_person_Age": 2.4763998985290527,
+    "Delivery_person_Ratings": 2.115799903869629,
+    "Vehicle_condition": 2.0836000442504883,
+    "traffic_Low": 2.0208001136779785,
+    "traffic_Jam": 1.1373000144958496,
+    "weather_Fog": 1.1103999614715576,
+    "weather_Cloudy": 1.0714999437332153,
+    "multiple_deliveries": 0.8335999846458435,
+    "weather_Sunny": 0.8197000026702881,
+    "festival_enc": 0.3528999984264374,
+    "city_enc": 0.3156999945640564,
+    "severe_x_distance": 0.29280000925064087,
+    "is_peak_hour": 0.2890999913215637,
+    "weather_Windy": 0.14640000462532043,
+    "traffic_Medium": 0.12870000302791595,
+    "order_hour": 0.0763000026345253,
+    "traffic_High": 0.07490000128746033,
+    "order_enc": 0.04230000078678131,
+    "vehicle_enc": 0.0348999984562397,
+    "weather_Sandstorms": 0.019500000402331352,
+    "weather_Stormy": 0.011300000362098217,
+    "is_weekend": 0.010200000368058681
   },
   "model_performance": {
     "delivery_time_model": {
@@ -218,61 +257,14 @@
       "val_rows": 4559,
       "test_rows": 9119,
       "baseline_mae": 7.6,
-      "mae_minutes": 3.22,
-      "r2_score": 0.818,
-      "improvement": 4.38,
-      "residual_mean": -0.05,
-      "residual_std": 4.02,
-      "within_5min_pct": 80.0,
+      "mae_minutes": 3.18,
+      "r2_score": 0.8215,
+      "improvement": 4.42,
+      "residual_mean": -0.06,
+      "residual_std": 3.98,
+      "within_5min_pct": 80.6,
       "within_10min_pct": 98.5,
       "above_10min_pct": 1.5
-    },
-    "demand_model": {
-      "type": "XGBoost with lag features",
-      "mae_orders": 9.2,
-      "baseline_mae": 33.5,
-      "forecast_std": 11.9,
-      "features": [
-        "order_hour",
-        "day_of_week",
-        "is_weekend",
-        "is_peak",
-        "prev_1h_count",
-        "prev_2h_count",
-        "rolling_avg_3h"
-      ]
     }
-  },
-  "demand_meta": {
-    "peak_hours": [
-      11,
-      12,
-      13,
-      14,
-      17,
-      18,
-      19,
-      20,
-      21
-    ],
-    "features": [
-      "order_hour",
-      "day_of_week",
-      "is_weekend",
-      "is_peak",
-      "prev_1h_count",
-      "prev_2h_count",
-      "rolling_avg_3h"
-    ],
-    "split": "chronological",
-    "mae_orders": 9.2,
-    "baseline_mae": 33.5,
-    "forecast_std": 11.9,
-    "last_known_baseline": [
-      119,
-      129,
-      142
-    ],
-    "last_timestamp": "2022-04-06 23:00:00"
   }
 }

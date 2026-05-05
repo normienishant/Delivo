@@ -47,7 +47,6 @@ print(f"Distance capped at {distance_cap:.2f} km")
 df["Order_Date"]  = pd.to_datetime(df["Order_Date"], format="%d-%m-%Y", errors="coerce")
 df["Time_Orderd"] = pd.to_datetime(df["Time_Orderd"], format="%H:%M:%S", errors="coerce")
 
-# Use median hour instead of 0 to avoid bias
 median_hour = int(df["Time_Orderd"].dt.hour.median())
 df["order_hour"]  = df["Time_Orderd"].dt.hour.fillna(median_hour).astype(int)
 df["day_of_week"] = df["Order_Date"].dt.dayofweek.fillna(0).astype(int)
@@ -59,59 +58,65 @@ peak_hours  = sorted([int(h) for h in hour_avg[hour_avg > overall_avg].index.tol
 df["is_peak_hour"] = df["order_hour"].apply(lambda h: 1 if h in peak_hours else 0)
 print(f"Peak hours: {peak_hours}")
 
-WEATHER_MAP = {"Sunny":0,"Cloudy":1,"Windy":2,"Fog":3,"Stormy":4,"Sandstorms":5}
-TRAFFIC_MAP = {"Low":0,"Medium":1,"High":2,"Jam":3}
+# ========== ONE‑HOT ENCODING ==========
+weather_dummies = pd.get_dummies(df["Weatherconditions"], prefix="weather")
+traffic_dummies = pd.get_dummies(df["Road_traffic_density"], prefix="traffic")
+df = pd.concat([df, weather_dummies, traffic_dummies], axis=1)
+
+WEATHER_COLS = list(weather_dummies.columns)
+TRAFFIC_COLS = list(traffic_dummies.columns)
+
+# Label encodings for the remaining small categoricals
 CITY_MAP    = {"Semi-Urban":0,"Urban":1,"Metropolitian":2}
 VEHICLE_MAP = {"bicycle":0,"electric_scooter":1,"scooter":2,"motorcycle":3}
 ORDER_MAP   = {"Snack":0,"Drinks":1,"Buffet":2,"Meal":3}
 
-df["weather_enc"]  = df["Weatherconditions"].map(WEATHER_MAP).fillna(0).astype(int)
-df["traffic_enc"]  = df["Road_traffic_density"].map(TRAFFIC_MAP).fillna(1).astype(int)
-df["city_enc"]     = df["City"].map(CITY_MAP).fillna(1).astype(int)
-df["vehicle_enc"]  = df["Type_of_vehicle"].map(VEHICLE_MAP).fillna(2).astype(int)
-df["order_enc"]    = df["Type_of_order"].map(ORDER_MAP).fillna(0).astype(int)
-df["festival_enc"] = df["Festival"].map({"No":0,"Yes":1}).fillna(0).astype(int)
+df["city_enc"]    = df["City"].map(CITY_MAP).fillna(1).astype(int)
+df["vehicle_enc"] = df["Type_of_vehicle"].map(VEHICLE_MAP).fillna(2).astype(int)
+df["order_enc"]   = df["Type_of_order"].map(ORDER_MAP).fillna(0).astype(int)
+df["festival_enc"]= df["Festival"].map({"No":0,"Yes":1}).fillna(0).astype(int)
+
+# ========== INTERACTION FEATURE ==========
+df['weather_severe'] = df['Weatherconditions'].isin(['Stormy', 'Sandstorms']).astype(int)
+df['severe_x_distance'] = df['weather_severe'] * df['distance_km']
 
 df = df.sort_values("Order_Date").reset_index(drop=True)
 
 FEATURES = [
     "Delivery_person_Age","Delivery_person_Ratings","distance_km",
-    "Vehicle_condition","multiple_deliveries","weather_enc",
-    "traffic_enc","city_enc","vehicle_enc","order_enc",
-    "festival_enc","order_hour","is_peak_hour","is_weekend"
-]
+    "Vehicle_condition","multiple_deliveries",
+    "city_enc","vehicle_enc","order_enc","festival_enc",
+    "order_hour","is_peak_hour","is_weekend"
+] + WEATHER_COLS + TRAFFIC_COLS + ['severe_x_distance']
 
 df_clean = df[FEATURES + ["Time_taken(min)"]].dropna()
 df_clean.to_csv("../data/train_clean.csv", index=False)
 print(f"Saved {len(df_clean)} rows, {len(FEATURES)} features")
-print("pickup_wait_min REMOVED - data leakage fix")
+print("One‑hot weather columns:", WEATHER_COLS)
+print("One‑hot traffic columns:", TRAFFIC_COLS)
+print("Interaction feature added: severe_x_distance")
 
-# Data quality stats
-missing_pct = {}
-for col in df.columns:
-    if df[col].isnull().sum() > 0:
-        missing_pct[col] = round(float(df[col].isnull().mean() * 100), 2)
-
+# artifacts
 artifacts = {
     "features": FEATURES,
     "peak_hours": peak_hours,
     "distance_cap": float(distance_cap),
     "overall_avg_delivery_min": float(round(overall_avg, 2)),
     "encodings": {
-        "weather": WEATHER_MAP,
-        "traffic": TRAFFIC_MAP,
+        "weather": {"Sunny":0,"Cloudy":1,"Windy":2,"Fog":3,"Stormy":4,"Sandstorms":5},
+        "traffic": {"Low":0,"Medium":1,"High":2,"Jam":3},
         "city":    CITY_MAP,
         "vehicle": VEHICLE_MAP,
         "order":   ORDER_MAP
     },
+    "weather_dummy_cols": WEATHER_COLS,
+    "traffic_dummy_cols": TRAFFIC_COLS,
     "feature_schema": {
-        "numerical":   ["Delivery_person_Age","Delivery_person_Ratings","distance_km","Vehicle_condition","multiple_deliveries"],
-        "categorical": ["weather_enc","traffic_enc","city_enc","vehicle_enc","order_enc","festival_enc"],
-        "temporal":    ["order_hour","is_peak_hour","is_weekend"]
-    },
-    "data_quality": {
-        "duplicate_rows": int(df.duplicated().sum()),
-        "missing_pct":    missing_pct
+        "numerical":   ["Delivery_person_Age","Delivery_person_Ratings","distance_km","Vehicle_condition","multiple_deliveries","severe_x_distance"],
+        "categorical": ["city_enc","vehicle_enc","order_enc","festival_enc"],
+        "temporal":    ["order_hour","is_peak_hour","is_weekend"],
+        "weather_dummies": WEATHER_COLS,
+        "traffic_dummies": TRAFFIC_COLS
     },
     "hour_baseline":     {str(k): int(v) for k, v in df.groupby("order_hour").size().items()},
     "hour_avg_delivery": {str(k): round(float(v), 2) for k, v in df.groupby("order_hour")["Time_taken(min)"].mean().items()},
@@ -158,7 +163,5 @@ artifacts = {
 with open("../models/artifacts.json", "w") as f:
     json.dump(artifacts, f, indent=2)
 
-print(f"Data quality — duplicates: {artifacts['data_quality']['duplicate_rows']}")
-print(f"Feature schema saved: {list(artifacts['feature_schema'].keys())}")
-print("artifacts.json saved")
+print("artifacts.json saved with one‑hot columns and interaction feature")
 print("Next: python model_training.py")

@@ -7,6 +7,7 @@ import numpy as np
 import requests
 import shap
 from math import radians, sin, cos, sqrt, atan2
+import pandas as pd
 
 app = FastAPI(title="Delivery Twin API", version="3.0")
 
@@ -61,18 +62,34 @@ def get_distance(lat1, lon1, lat2, lon2):
     return round(haversine(lat1, lon1, lat2, lon2), 2), "haversine"
 
 def build_features(req, distance):
-    return np.array([[
+    # basic numeric features
+    feats = [
         req.driver_age, req.driver_rating, distance,
         req.vehicle_condition, req.multiple_deliveries,
-        WEATHER_MAP.get(req.weather, 0),
-        TRAFFIC_MAP.get(req.traffic, 1),
         CITY_MAP.get(req.city, 1),
         VEHICLE_MAP.get(req.vehicle, 2),
         ORDER_MAP.get(req.order_type, 0),
         req.festival, req.order_hour,
         1 if req.order_hour in PEAK_HOURS else 0,
         req.is_weekend
-    ]])
+    ]
+
+    # one‑hot weather (order must match training)
+    weather_dummies = A["weather_dummy_cols"]
+    for col in weather_dummies:
+        feats.append(1 if col == f"weather_{req.weather}" else 0)
+
+    # one‑hot traffic (same order as training)
+    traffic_dummies = A["traffic_dummy_cols"]
+    for col in traffic_dummies:
+        feats.append(1 if col == f"traffic_{req.traffic}" else 0)
+
+    # interaction feature – MUST be last, exactly as in training
+    is_severe = 1 if req.weather in ['Stormy', 'Sandstorms'] else 0
+    severe_x_distance = is_severe * distance
+    feats.append(severe_x_distance)
+
+    return np.array([feats])
 
 class DeliveryRequest(BaseModel):
     restaurant_lat: float
@@ -142,6 +159,41 @@ def root():
         "models": A.get("model_performance", {})
     }
 
+@app.get("/random-delivery")        # ✅ new endpoint
+def random_delivery():
+    df = pd.read_csv("../data/train.csv")
+    row = df.sample(1).iloc[0]
+    
+    try:
+        raw_time = str(row["Time_taken(min)"]).strip()
+        actual_min = float(raw_time.split()[-1])
+    except:
+        actual_min = None
+
+    payload = {
+        "restaurant_lat": float(row["Restaurant_latitude"]),
+        "restaurant_lon": float(row["Restaurant_longitude"]),
+        "delivery_lat": float(row["Delivery_location_latitude"]),
+        "delivery_lon": float(row["Delivery_location_longitude"]),
+        "order_hour": int(pd.to_datetime(row["Time_Orderd"], format="%H:%M:%S", errors="coerce").hour or 12),
+        "weather": str(row["Weatherconditions"]).replace("conditions ", "").strip(),
+        "traffic": str(row["Road_traffic_density"]).strip(),
+        "city": str(row["City"]).strip(),
+        "vehicle": str(row["Type_of_vehicle"]).strip(),
+        "order_type": str(row["Type_of_order"]).strip(),
+        "driver_age": float(row["Delivery_person_Age"]) if row["Delivery_person_Age"] not in ["NaN", ""] else 30.0,
+        "driver_rating": float(row["Delivery_person_Ratings"]) if row["Delivery_person_Ratings"] not in ["NaN", ""] else 4.0,
+        "vehicle_condition": int(row["Vehicle_condition"]) if row["Vehicle_condition"] not in ["NaN", ""] else 2,
+        "multiple_deliveries": int(row["multiple_deliveries"]) if row["multiple_deliveries"] not in ["NaN", ""] else 1,
+        "festival": 1 if str(row["Festival"]).strip() == "Yes" else 0,
+        "is_weekend": 1 if pd.to_datetime(row["Order_Date"], format="%d-%m-%Y", errors="coerce").weekday() >= 5 else 0,
+    }
+    
+    return {
+        "payload": payload,
+        "actual_minutes": actual_min
+    }
+
 @app.get("/health")
 def health():
     return {
@@ -166,11 +218,17 @@ def predict_delivery_time(req: DeliveryRequest):
             req.delivery_lat, req.delivery_lon
         )
         distance  = min(distance, DISTANCE_CAP)
-        if(distance <= 0):
+        if distance <= 0:
             raise HTTPException(status_code=400, detail="Invalid coordinates — distance cannot be zero")
         
         features  = build_features(req, distance)
         predicted = round(float(xgb_model.predict(features)[0]), 1)
+
+        # Business rule: severe weather safety margin (until more data is collected)
+        if req.weather in ['Stormy', 'Sandstorms']:
+            predicted += 2.5
+            predicted = round(predicted, 1)
+
         mae       = A["model_performance"]["delivery_time_model"]["mae_minutes"]
         city_avg  = CITY_STATS.get(req.city, {}).get("avg_delivery_min", A["overall_avg_delivery_min"])
         hour_avg  = HOUR_AVG_DELIVERY.get(req.order_hour, A["overall_avg_delivery_min"])
@@ -222,9 +280,6 @@ def simulate_scenario(req: ScenarioRequest):
             nxt          = float(multi_map.get(str(min(3, int(req.multiple_deliveries)+1)), base_time))
             demand_extra = nxt - cur
 
-        # Heuristic approximation — dataset has no driver supply column
-        # 9.8 min = real avg pickup wait from dataset
-        # In production: replace with real-time driver GPS feed
         driver_impact = -(min(9.8*0.5, req.driver_count_change*0.4)) if req.driver_count_change > 0 else abs(req.driver_count_change*0.4)
         new_time      = round(max(10, base_time + driver_impact + demand_extra), 1)
         change_pct    = round(((new_time-base_time)/base_time)*100, 1)

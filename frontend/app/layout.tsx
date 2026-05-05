@@ -40,8 +40,28 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-background" suppressHydrationWarning>
       <head>
-        {/* This meta tag reinforces the server‑side header */}
-        <meta httpEquiv="Permissions-Policy" content="get-installed-related-apps=()" />
+        {/* 🔒 THIS MUST RUN FIRST – permanently kills the related-apps API */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                // Override the method before anything can call it
+                if (typeof navigator.getInstalledRelatedApps === 'function') {
+                  Object.defineProperty(navigator, 'getInstalledRelatedApps', {
+                    get: function() { return function() { return Promise.resolve([]); }; },
+                    set: function() {}
+                  });
+                }
+                // Also freeze the property to prevent any library from resetting it
+                Object.defineProperty(navigator, 'getInstalledRelatedApps', {
+                  value: function() { return Promise.resolve([]); },
+                  writable: false,
+                  configurable: false
+                });
+              })();
+            `,
+          }}
+        />
       </head>
       <body
         className={`${instrumentSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} font-sans antialiased bg-background text-foreground`}

@@ -40,25 +40,29 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-background" suppressHydrationWarning>
       <head>
-        {/* 🔒 THIS MUST RUN FIRST – permanently kills the related-apps API */}
+        {/* 🛡️ ULTIMATE FIX – runs before any other script */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              (function() {
-                // Override the method before anything can call it
-                if (typeof navigator.getInstalledRelatedApps === 'function') {
-                  Object.defineProperty(navigator, 'getInstalledRelatedApps', {
-                    get: function() { return function() { return Promise.resolve([]); }; },
-                    set: function() {}
+              // 1. Unregister all service workers immediately
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                  registrations.forEach(function(reg) {
+                    reg.unregister();
                   });
-                }
-                // Also freeze the property to prevent any library from resetting it
-                Object.defineProperty(navigator, 'getInstalledRelatedApps', {
-                  value: function() { return Promise.resolve([]); },
-                  writable: false,
-                  configurable: false
                 });
-              })();
+              }
+
+              // 2. Block the related-apps API permanently
+              Object.defineProperty(navigator, 'getInstalledRelatedApps', {
+                get: function() { return function() { return Promise.resolve([]); }; },
+                set: function() {}
+              });
+              Object.defineProperty(navigator, 'getInstalledRelatedApps', {
+                value: function() { return Promise.resolve([]); },
+                writable: false,
+                configurable: false
+              });
             `,
           }}
         />

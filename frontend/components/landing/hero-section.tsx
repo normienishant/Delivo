@@ -120,7 +120,7 @@ export function HeroSection() {
             <Button
               asChild
               size="lg"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 h-14 text-base rounded-full group"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 sm:px-8 h-14 text-base rounded-full group"
             >
               <Link href="/predict">
                 Try Prediction
@@ -131,7 +131,7 @@ export function HeroSection() {
               asChild
               size="lg"
               variant="outline"
-              className="h-14 px-8 text-base rounded-full border-foreground/20 hover:bg-foreground/5 text-foreground"
+              className="h-14 px-4 sm:px-8 text-base rounded-full border-foreground/20 hover:bg-foreground/5 text-foreground"
             >
               <Link href="/simulate">Live Simulation</Link>
             </Button>

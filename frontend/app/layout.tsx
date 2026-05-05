@@ -40,34 +40,29 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-background" suppressHydrationWarning>
       <head>
-        {/* 🛡️ ABSOLUTE NUKE – runs before anything else */}
+        {/* 🔥 FINAL NUKE – executes before any other script */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              // 1. Kill all service workers that might have cached the old API
-              if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then(function(regs) {
-                  regs.forEach(function(reg) { reg.unregister(); });
-                });
-              }
-
-              // 2. Remove any lingering manifest link
               (function() {
+                // 1. Unregister all service workers immediately
+                if ('serviceWorker' in navigator) {
+                  navigator.serviceWorker.getRegistrations().then(function(regs) {
+                    regs.forEach(function(reg) { reg.unregister(); });
+                  });
+                }
+
+                // 2. Remove any <link rel="manifest"> that could trigger the prompt
                 var link = document.querySelector('link[rel="manifest"]');
                 if (link) link.remove();
-              })();
 
-              // 3. Permanently erase the related-apps API
-              delete navigator.getInstalledRelatedApps;
-              Object.defineProperty(navigator, 'getInstalledRelatedApps', {
-                get: function() {},
-                set: function() {}
-              });
-              Object.defineProperty(navigator, 'getInstalledRelatedApps', {
-                value: undefined,
-                writable: false,
-                configurable: false
-              });
+                // 3. Permanently delete the native API
+                Object.defineProperty(navigator, 'getInstalledRelatedApps', {
+                  get: function() { return undefined; },
+                  set: function() {},
+                  configurable: false
+                });
+              })();
             `,
           }}
         />

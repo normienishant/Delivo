@@ -47,6 +47,16 @@ export default function RootLayout({
           {children}
           <Analytics />
         </ThemeProvider>
+        <script
+  dangerouslySetInnerHTML={{
+    __html: `
+      // Block "wants access to other apps" prompt
+      if (navigator.getInstalledRelatedApps) {
+        navigator.getInstalledRelatedApps = () => Promise.resolve([]);
+      }
+    `,
+  }}
+/>
       </body>
     </html>
   );

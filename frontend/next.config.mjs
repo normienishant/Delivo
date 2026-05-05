@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // keep your existing settings
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -7,15 +8,15 @@ const nextConfig = {
     unoptimized: true,
   },
 
-  // 🔒 PERMANENT BLOCK – "wants access to other apps" popup
+  // 🔒 PERMANENT BLOCK – MUST be sent on every response
   async headers() {
     return [
       {
-        source: "/(.*)",
+        source: '/(.*)',
         headers: [
           {
-            key: "Permissions-Policy",
-            value: "get-installed-related-apps=()",
+            key: 'Permissions-Policy',
+            value: 'get-installed-related-apps=()',
           },
         ],
       },

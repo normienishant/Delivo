@@ -5,7 +5,7 @@
       "headers": [
         {
           "key": "Permissions-Policy",
-          "value": "get-installed-related-apps=(), geolocation=(), camera=(), microphone=()"
+          "value": "get-installed-related-apps=()"
         }
       ]
     }

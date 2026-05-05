@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 
 const ZoneMap = dynamic(() => import("./zone-map"), { ssr: false });
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
 type FeedEntry = {
   id: string;

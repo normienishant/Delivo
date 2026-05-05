@@ -27,7 +27,7 @@ import {
 import { LocationSearch } from "./location-search";
 import NearbyRestaurants, { Restaurant } from "./nearby-restaurants";
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
 const WEATHER = ["Sunny", "Cloudy", "Windy", "Fog", "Stormy", "Sandstorms"];
 const TRAFFIC = ["Low", "Medium", "High", "Jam"];

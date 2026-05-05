@@ -13,7 +13,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { AlertCircle, Activity, BarChart3, CloudRain, MapPin } from "lucide-react";
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
 type HourlyPoint = { hour: string; orders: number };
 type WeatherPoint = { weather: string; minutes: number };

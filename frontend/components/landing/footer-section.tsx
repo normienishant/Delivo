@@ -11,7 +11,7 @@ const footerLinks = {
     { name: "Simulate", href: "/simulate" },
     { name: "Insights", href: "/insights" },
   ],
-  Built With: [
+  "Built With": [
   { name: "FastAPI",       href: "https://fastapi.tiangolo.com" },
   { name: "XGBoost",       href: "https://xgboost.readthedocs.io" },
   { name: "Next.js",       href: "https://nextjs.org/docs" },

@@ -35,7 +35,6 @@ const CITY = ["Semi-Urban", "Urban", "Metropolitian"];
 const VEHICLE = ["bicycle", "electric_scooter", "scooter", "motorcycle"];
 const ORDER_TYPE = ["Snack", "Drinks", "Buffet", "Meal"];
 
-// ✅ Helper: Calculate distance between two lat/lng points (in km)
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
   const toRad = (x: number) => (x * Math.PI) / 180;
@@ -154,7 +153,23 @@ export function PredictionForm() {
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // ✅ Validate that restaurant is within 50 km of delivery
+
+    // 🚨 Require user to change from default Bangalore coordinates
+    const DEFAULT_REST_LAT = "12.9716";
+    const DEFAULT_REST_LON = "77.5946";
+    const DEFAULT_DEL_LAT  = "12.9352";
+    const DEFAULT_DEL_LON  = "77.6245";
+
+    if (form.rest_lat === DEFAULT_REST_LAT && form.rest_lon === DEFAULT_REST_LON) {
+      setError("Please select a restaurant first.");
+      return;
+    }
+    if (form.del_lat === DEFAULT_DEL_LAT && form.del_lon === DEFAULT_DEL_LON) {
+      setError("Please select a delivery location first.");
+      return;
+    }
+
+    // ✅ Validate that restaurant is within 21 km of delivery
     const dLat = parseFloat(form.del_lat);
     const dLon = parseFloat(form.del_lon);
     const rLat = parseFloat(form.rest_lat);
@@ -167,6 +182,7 @@ export function PredictionForm() {
         return;
       }
     }
+
     setError(null);
     setResult(null);
     setShap(null);
@@ -208,18 +224,18 @@ export function PredictionForm() {
         if (!exRes.ok) return;
         const ex = await exRes.json();
         setShap(
-  (ex.top_factors ?? [])
-    .slice(0, 5)
-    .map((f: any) => {
-      const raw = Number(f.impact_min ?? f.impact ?? f.importance ?? 0);
-      return {
-        feature: f.feature ?? "factor",
-        impact: isNaN(raw) ? 0 : raw,
-        direction: (raw >= 0 ? "increases" : "decreases") as "increases" | "decreases",
-      };
-    })
-    .filter((f: any) => f.impact !== 0)   // optional, lekin ab sahi values ayengi
-);
+          (ex.top_factors ?? [])
+            .slice(0, 5)
+            .map((f: any) => {
+              const raw = Number(f.impact_min ?? f.impact ?? f.importance ?? 0);
+              return {
+                feature: f.feature ?? "factor",
+                impact: isNaN(raw) ? 0 : raw,
+                direction: (raw >= 0 ? "increases" : "decreases") as "increases" | "decreases",
+              };
+            })
+            .filter((f: any) => f.impact !== 0)
+        );
       } catch {}
     });
   };
@@ -293,21 +309,21 @@ export function PredictionForm() {
               deliveryLat={deliveryLat}
               deliveryLon={deliveryLon}
               onSelect={(r: Restaurant) => {
-  const dist = haversineKm(
-    parseFloat(form.del_lat),
-    parseFloat(form.del_lon),
-    r.lat,
-    r.lon
-  );
-  if (dist > 21) {
-    setError(`This restaurant is ${dist.toFixed(0)} km away. Please select within 21 km.`);
-    return;
-  }
-  // ✅ directly set correct coordinates
-  update("rest_lat", r.lat.toString());
-  update("rest_lon", r.lon.toString());
-  setRestaurantDisplay(r.name);
-}}  
+                const dist = haversineKm(
+                  parseFloat(form.del_lat),
+                  parseFloat(form.del_lon),
+                  r.lat,
+                  r.lon
+                );
+                if (dist > 21) {
+                  setError(`This restaurant is ${dist.toFixed(0)} km away. Please select within 21 km.`);
+                  return;
+                }
+                // ✅ directly set correct coordinates
+                update("rest_lat", r.lat.toString());
+                update("rest_lon", r.lon.toString());
+                setRestaurantDisplay(r.name);
+              }}  
             />
           )}
 

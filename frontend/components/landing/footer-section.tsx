@@ -52,7 +52,7 @@ export function FooterSection() {
               </Link>
 
               <p className="text-muted-foreground leading-relaxed mb-4 max-w-xs">
-                Delivo — AI Delivery Twin. Predict, simulate, and optimize your fleet in real time.
+                Delivo — AI Delivery Assistant. Predict, simulate, and optimize your fleet in real time.
               </p>
               <p className="text-xs font-mono text-muted-foreground mb-8">
                 Built with FastAPI, XGBoost, Next.js
